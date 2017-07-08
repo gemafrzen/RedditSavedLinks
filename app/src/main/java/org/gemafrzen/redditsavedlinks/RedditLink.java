@@ -8,9 +8,11 @@ public class RedditLink {
     private String title; //title or body (if comment)
     private String subreddit; //subreddit_name_prefixed
     private String domain; //e.g.: 'self.Fitness'
+    private String url;
     private int numberOfComments; //num_comments
     private int created_utc; //in unix time
     private int score;
+
 
 
     public RedditLink() {}
@@ -37,6 +39,14 @@ public class RedditLink {
 
     public void setDomain(String domain) {
         this.domain = domain;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public int getNumberOfComments() {

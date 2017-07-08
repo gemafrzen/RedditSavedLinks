@@ -29,7 +29,7 @@ public class LoginActivity extends Activity {
     private static final String AUTH_URL =
             "https://www.reddit.com/api/v1/authorize.compact?client_id=%s" +
                     "&response_type=code&state=%s&redirect_uri=%s&" +
-                    "duration=temporary&scope=history";
+                    "duration=temporary&scope=history,identity";
 
     private static final String CLIENT_ID = "l2wLkGX9_udUbg";
 
@@ -42,12 +42,18 @@ public class LoginActivity extends Activity {
 
     private String accessToken;
     private String refreshToken;
+    private String username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        accessToken = "";
+        refreshToken = "";
+        username = "";
         setContentView(R.layout.activity_login);
     }
+
 
     /**
      * open a browser for reddit oAuth
@@ -113,6 +119,8 @@ public class LoginActivity extends Activity {
                     accessToken = data.optString("access_token");
                     refreshToken = data.optString("refresh_token");
 
+                    getUsername();
+
                     Log.d(TAG, "Access Token = " + accessToken);
                     Log.d(TAG, "Refresh Token = " + refreshToken);
                 } catch (JSONException e) {
@@ -122,12 +130,12 @@ public class LoginActivity extends Activity {
         });
     }
 
-    public void showSavedLinks(View view){
+    public void getUsername() {
         OkHttpClient client = new OkHttpClient();
 
         Request request = new Request.Builder()
                 .addHeader("Authorization", "bearer " + accessToken)
-                .url("https://oauth.reddit.com/user/gemafrzen/saved/.json?sr=fitness")
+                .url("https://oauth.reddit.com/api/v1/me")
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -138,16 +146,54 @@ public class LoginActivity extends Activity {
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                Log.e(TAG, "onResponse success");
-                final String jsonString = response.body().string();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        showJson(jsonString);
-                    }
-                });
+                String json = response.body().string();
+                JSONObject data = null;
+                try {
+                    data = new JSONObject(json);
+                    username = data.optString("name");
+                    Log.e(TAG, "getusername: " + username);
+                } catch (JSONException e) {
+                    Log.e(TAG, "json response username: " + json);
+                    e.printStackTrace();
+                }
             }
         });
+    }
+
+    public void showSavedLinks(View view){
+        Log.e(TAG, "showLinks for " + username + " with token " + accessToken);
+
+        if(!username.equals("")) {
+            OkHttpClient client = new OkHttpClient();
+
+            /*
+            TODO ?limit=30 returns 0 comments; =100 is too large for an intent
+             */
+            Request request = new Request.Builder()
+                    .addHeader("Authorization", "bearer " + accessToken)
+                    .url("https://oauth.reddit.com/user/" + username + "/saved/.json") //sr=fitness
+                    .build();
+
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    Log.e(TAG, "ERROR: " + e);
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    final String jsonString = response.body().string();
+                    Log.e(TAG, "onResponse success" + jsonString);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            showJson(jsonString);
+                        }
+                    });
+                }
+            });
+        }
     }
 
     private void showJson(String jsonString){

@@ -1,6 +1,8 @@
 package org.gemafrzen.redditsavedlinks;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +24,18 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
             subreddit = (TextView) view.findViewById(R.id.subreddit);
             domain = (TextView) view.findViewById(R.id.domain);
             comments = (TextView) view.findViewById(R.id.comments);
+
+            View cardView = view.findViewById(R.id.card_view);
+
+            if(cardView != null) cardView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    int position =  getAdapterPosition();
+                    openInBrowser(position);
+                    return true;
+                }
+
+            });
         }
     }
 
@@ -50,5 +64,10 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
     @Override
     public int getItemCount() {
         return redditLinkList.size();
+    }
+
+    private void openInBrowser(int position){
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(redditLinkList.get(position).getUrl()));
+        mContext.startActivity(intent);
     }
 }

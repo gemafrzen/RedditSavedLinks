@@ -70,10 +70,13 @@ public class SavedLinksActivity extends Activity {
                     redditlink.setNumberOfComments(jsonData.getInt("num_comments"));
 
                 if(jsonData.has("score"))
-                    redditlink.setNumberOfComments(jsonData.getInt("score"));
+                    redditlink.setScore(jsonData.getInt("score"));
 
                 if(jsonData.has("domain"))
-                    redditlink.setSubreddit(jsonData.getString("domain"));
+                    redditlink.setDomain(jsonData.getString("domain"));
+
+                if(jsonData.has("url"))
+                    redditlink.setUrl(jsonData.getString("url"));
 
                 redditLinkList.add(redditlink);
             }
