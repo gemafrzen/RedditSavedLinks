@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">RedditSavedLinks</string>
+    <string name="txt_comments">Comments</string>
+    <string name="txt_blank_textview">Text</string>
+</resources>

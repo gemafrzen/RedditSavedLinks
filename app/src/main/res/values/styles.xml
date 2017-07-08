@@ -1,0 +1,7 @@
+<resources>
+    <style name="cardview">
+        <item name="android:elevation">2dp</item>
+        <item name="android:layout_margin">10dp</item>
+    </style>
+
+</resources>
