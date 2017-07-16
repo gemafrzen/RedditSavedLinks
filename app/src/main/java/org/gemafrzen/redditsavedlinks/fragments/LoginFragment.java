@@ -1,13 +1,19 @@
-package org.gemafrzen.redditsavedlinks;
+package org.gemafrzen.redditsavedlinks.fragments;
 
-import android.app.Activity;
+import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 
+import org.gemafrzen.redditsavedlinks.MainActivity;
+import org.gemafrzen.redditsavedlinks.R;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -21,7 +27,16 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class LoginActivity extends Activity {
+/**
+ * A simple {@link Fragment} subclass.
+ * Activities that contain this fragment must implement the
+ * {@link LoginFragment.OnFragmentInteractionListener} interface
+ * to handle interaction events.
+ * Use the {@link LoginFragment#newInstance} factory method to
+ * create an instance of this fragment.
+ */
+public class LoginFragment extends Fragment {
+    private String TAG = LoginFragment.class.getSimpleName();
 
     private static final String ACCESS_TOKEN_URL =
             "https://www.reddit.com/api/v1/access_token";
@@ -38,22 +53,67 @@ public class LoginActivity extends Activity {
 
     public static final String STATE = "GEMAFRZEN_REDDIT_SAVED_LINKS";
 
-    private String TAG = LoginActivity.class.getSimpleName();
-
     private String accessToken;
     private String refreshToken;
     private String username;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    private OnFragmentInteractionListener mListener;
 
+    public LoginFragment() {}
+
+    /**
+     * Use this factory method to create a new instance of
+     * this fragment using the provided parameters.
+     *
+     * @return A new instance of fragment SavedLinkListFragment.
+     */
+    public static LoginFragment newInstance() {
+        LoginFragment fragment = new LoginFragment();
+        Bundle args = new Bundle();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         accessToken = "";
         refreshToken = "";
         username = "";
-        setContentView(R.layout.activity_login);
     }
 
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_login, container, false);
+
+        Button button = (Button) view.findViewById(R.id.btn_login);
+        button.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                startSignIn(v);
+            }
+        });
+
+        return view;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
 
     /**
      * open a browser for reddit oAuth
@@ -66,11 +126,15 @@ public class LoginActivity extends Activity {
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
 
-        if(getIntent() != null && getIntent().getAction().equals(Intent.ACTION_VIEW)) {
-            Uri uri = getIntent().getData();
+        Intent intent = getActivity().getIntent();
+
+        if(intent != null &&
+                intent.getAction() != null &&
+                intent.getAction().equals(Intent.ACTION_VIEW)) {
+            Uri uri = intent.getData();
             if(uri.getQueryParameter("error") != null) {
                 String error = uri.getQueryParameter("error");
                 Log.e(TAG, "An error has occurred : " + error);
@@ -152,6 +216,7 @@ public class LoginActivity extends Activity {
                     data = new JSONObject(json);
                     username = data.optString("name");
                     Log.e(TAG, "getusername: " + username);
+                    openSavedLinkListFragment();
                 } catch (JSONException e) {
                     Log.e(TAG, "json response username: " + json);
                     e.printStackTrace();
@@ -160,45 +225,27 @@ public class LoginActivity extends Activity {
         });
     }
 
-    public void showSavedLinks(View view){
-        Log.e(TAG, "showLinks for " + username + " with token " + accessToken);
-
-        if(!username.equals("")) {
-            OkHttpClient client = new OkHttpClient();
-
-            /*
-            TODO ?limit=30 returns 0 comments; =100 is too large for an intent
-             */
-            Request request = new Request.Builder()
-                    .addHeader("Authorization", "bearer " + accessToken)
-                    .url("https://oauth.reddit.com/user/" + username + "/saved/.json") //sr=fitness
-                    .build();
-
-
-            client.newCall(request).enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    Log.e(TAG, "ERROR: " + e);
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    final String jsonString = response.body().string();
-                    Log.e(TAG, "onResponse success" + jsonString);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            showJson(jsonString);
-                        }
-                    });
-                }
-            });
-        }
+    public void openSavedLinkListFragment(){
+        Uri builtUri = Uri.parse("login")
+                .buildUpon()
+                .appendQueryParameter(MainActivity.ACCESS_TOKEN, accessToken)
+                .appendQueryParameter(MainActivity.REFRESH_TOKEN, refreshToken)
+                .appendQueryParameter(MainActivity.USERNAME, username)
+                .build();
+        mListener.onFragmentInteraction(builtUri);
     }
 
-    private void showJson(String jsonString){
-        Intent intent = new Intent(this, SavedLinksActivity.class);
-        intent.putExtra(SavedLinksActivity.JSON_STRING, jsonString);
-        this.startActivity(intent);
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    public interface OnFragmentInteractionListener {
+        void onFragmentInteraction(Uri uri);
     }
 }

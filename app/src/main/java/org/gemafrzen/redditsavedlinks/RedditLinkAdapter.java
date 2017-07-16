@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import java.util.List;
 
 public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.MyViewHolder> {
 
+    private String TAG = RedditLinkAdapter.class.getSimpleName();
     private Context mContext;
     private List<RedditLink> redditLinkList;
 
@@ -39,9 +41,9 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
         }
     }
 
-    public RedditLinkAdapter(Context mContext, List<RedditLink> albumList) {
+    public RedditLinkAdapter(Context mContext, List<RedditLink> linkList) {
         this.mContext = mContext;
-        this.redditLinkList = albumList;
+        this.redditLinkList = linkList;
     }
 
     @Override
@@ -67,6 +69,8 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
     }
 
     private void openInBrowser(int position){
+        Log.e(TAG, "redditLinkList.get(position).getUrl() = " + redditLinkList.get(position).getUrl());
+
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(redditLinkList.get(position).getUrl()));
         mContext.startActivity(intent);
     }

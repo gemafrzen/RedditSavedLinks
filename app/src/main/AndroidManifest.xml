@@ -10,7 +10,9 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true">
-        <activity android:name=".LoginActivity">
+        <activity
+            android:name=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -28,7 +30,6 @@
                     android:scheme="redditsavedlinks" />
             </intent-filter>
         </activity>
-        <activity android:name=".SavedLinksActivity"></activity>
     </application>
 
 </manifest>
