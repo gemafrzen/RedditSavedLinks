@@ -1,7 +1,6 @@
 package org.gemafrzen.redditsavedlinks;
 
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -12,14 +11,13 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import org.gemafrzen.redditsavedlinks.db.AppDatabase;
 import org.gemafrzen.redditsavedlinks.db.entities.Subreddit;
 import org.gemafrzen.redditsavedlinks.db.entities.UserSettings;
 import org.gemafrzen.redditsavedlinks.fragments.LoginFragment;
 import org.gemafrzen.redditsavedlinks.fragments.SavedLinkListFragment;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.List;
 
@@ -42,36 +40,26 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
         //TODO save user settings
         AppDatabase database = AppDatabase.getDatabaseOnUIThread(getApplicationContext());
         List<UserSettings> us = database.UserSettingsModel().getUserSettings(true);
 
         Fragment fragment;
 
-        if(us.isEmpty()) fragment = new LoginFragment();
-        else fragment = new SavedLinkListFragment();
+        if(us.isEmpty()) fragment = LoginFragment.newInstance();
+        else {
+            accessToken = us.get(0).accesstoken;
+            refreshToken = us.get(0).refreshtoken;
+            username = us.get(0).username;
+            fragment = SavedLinkListFragment.newInstance(accessToken, refreshToken, username);
+        }
 
         getFragmentManager().beginTransaction().replace(R.id.fragmentframe, fragment).commit();
 
         new FillMenu().execute();
-
-        if(this.getIntent() != null) {
-            accessToken = this.getIntent().getStringExtra(ACCESS_TOKEN);
-            refreshToken = this.getIntent().getStringExtra(REFRESH_TOKEN);
-            username = this.getIntent().getStringExtra(USERNAME);
-            Log.e(TAG, "MainActivity onCreate : " + username);
-        }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        /*FragmentManager fragmentManager = getFragmentManager();
-        SavedLinkListFragment fragment = (SavedLinkListFragment) fragmentManager.findFragmentById(R.id.fragmentframe);
-        if(fragment != null){
-            fragment.startGettingLinks(accessToken,refreshToken, username);
-        }*/
     }
 
     @Override
@@ -98,20 +86,22 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
+        Log.e(TAG, "ID = " + id + " and Title = " + item.getTitle());
+        /*if (id == R.id.nav_manage) {
             // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        } */
 
-        } else if (id == R.id.nav_slideshow) {
+        Fragment fragment = getFragmentManager().findFragmentById(R.id.fragmentframe);
 
-        } else if (id == R.id.nav_manage) {
-
+        if(fragment instanceof LoginFragment){
+            Toast.makeText(getApplicationContext(), "Please login first!", Toast.LENGTH_SHORT).show();
+        }else if(fragment instanceof SavedLinkListFragment){
+            ((SavedLinkListFragment) fragment).setFilter(item.getTitle().toString());
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -133,7 +123,7 @@ public class MainActivity extends AppCompatActivity
                     .addToBackStack(null)
                     .commit();
 
-            fragment.startGettingLinks(uri.getQueryParameter(MainActivity.ACCESS_TOKEN),
+            fragment.setTokensAndUsername(uri.getQueryParameter(MainActivity.ACCESS_TOKEN),
                     uri.getQueryParameter(MainActivity.REFRESH_TOKEN),
                     uri.getQueryParameter(MainActivity.USERNAME));
         }else if(uri.toString().equals("refillNavigationView")){
@@ -189,7 +179,6 @@ public class MainActivity extends AppCompatActivity
 
         protected Void doInBackground(Void... arg0) {
             AppDatabase database = AppDatabase.getDatabase(getApplicationContext());
-
             subreddits = database.SubredditModel().getAllSubredditsSorted();
 
             return null;

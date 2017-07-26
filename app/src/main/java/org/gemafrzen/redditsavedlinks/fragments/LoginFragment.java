@@ -14,6 +14,8 @@ import android.widget.Button;
 
 import org.gemafrzen.redditsavedlinks.MainActivity;
 import org.gemafrzen.redditsavedlinks.R;
+import org.gemafrzen.redditsavedlinks.db.AppDatabase;
+import org.gemafrzen.redditsavedlinks.db.entities.UserSettings;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -120,9 +122,8 @@ public class LoginFragment extends Fragment {
      * @param view
      */
     public void startSignIn(View view) {
-        String url = String.format(AUTH_URL, CLIENT_ID, STATE, REDIRECT_URI);
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        startActivity(intent);
+        startActivity(new Intent(Intent.ACTION_VIEW,
+                Uri.parse(String.format(AUTH_URL, CLIENT_ID, STATE, REDIRECT_URI))));
     }
 
     @Override
@@ -177,16 +178,12 @@ public class LoginFragment extends Fragment {
             public void onResponse(Call call, Response response) throws IOException {
                 String json = response.body().string();
 
-                JSONObject data = null;
                 try {
-                    data = new JSONObject(json);
+                    JSONObject data = new JSONObject(json);
                     accessToken = data.optString("access_token");
                     refreshToken = data.optString("refresh_token");
 
-                    getUsername();
-
-                    Log.d(TAG, "Access Token = " + accessToken);
-                    Log.d(TAG, "Refresh Token = " + refreshToken);
+                    getUsername(accessToken);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -194,7 +191,7 @@ public class LoginFragment extends Fragment {
         });
     }
 
-    public void getUsername() {
+    public void getUsername(String accessToken) {
         OkHttpClient client = new OkHttpClient();
 
         Request request = new Request.Builder()
@@ -211,11 +208,12 @@ public class LoginFragment extends Fragment {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String json = response.body().string();
-                JSONObject data = null;
                 try {
-                    data = new JSONObject(json);
+                    JSONObject data = new JSONObject(json);
                     username = data.optString("name");
                     Log.e(TAG, "getusername: " + username);
+
+                    saveUserSettingsInDB();
                     openSavedLinkListFragment();
                 } catch (JSONException e) {
                     Log.e(TAG, "json response username: " + json);
@@ -225,6 +223,11 @@ public class LoginFragment extends Fragment {
         });
     }
 
+
+
+    /**
+     * send a message to the activity to open the SavedLinkListFragment
+     */
     public void openSavedLinkListFragment(){
         Uri builtUri = Uri.parse("login")
                 .buildUpon()
@@ -233,6 +236,20 @@ public class LoginFragment extends Fragment {
                 .appendQueryParameter(MainActivity.USERNAME, username)
                 .build();
         mListener.onFragmentInteraction(builtUri);
+    }
+
+    /**
+     * saves permanent tokens in db for continued access
+     */
+    private void saveUserSettingsInDB(){
+        AppDatabase database = AppDatabase.getDatabase(getContext());
+
+        database.UserSettingsModel().addUserSettings(UserSettings.builder()
+                                                    .setUsername(username)
+                                                    .setisCurrentUser(true)
+                                                    .setAccesstoken(accessToken)
+                                                    .setRefreshtoken(refreshToken)
+                                                    .build());
     }
 
     /**

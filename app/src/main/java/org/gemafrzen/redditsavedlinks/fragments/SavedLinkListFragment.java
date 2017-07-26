@@ -2,6 +2,7 @@ package org.gemafrzen.redditsavedlinks.fragments;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -11,12 +12,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import org.gemafrzen.redditsavedlinks.R;
 import org.gemafrzen.redditsavedlinks.RedditLink;
 import org.gemafrzen.redditsavedlinks.RedditLinkAdapter;
 import org.gemafrzen.redditsavedlinks.db.AppDatabase;
+import org.gemafrzen.redditsavedlinks.db.entities.Link;
 import org.gemafrzen.redditsavedlinks.db.entities.Subreddit;
+import org.gemafrzen.redditsavedlinks.db.entities.UserSettings;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,6 +49,7 @@ public class SavedLinkListFragment extends Fragment {
     private String mAccesstoken;
     private String mRefreshToken;
     private String mUsername;
+    private String mFilterSubreddit;
 
     private RecyclerView recyclerView;
     private SwipeRefreshLayout mSwipeRefreshLayout;
@@ -63,10 +68,15 @@ public class SavedLinkListFragment extends Fragment {
      *
      * @return A new instance of fragment SavedLinkListFragment.
      */
-    public static SavedLinkListFragment newInstance() {
+    public static SavedLinkListFragment newInstance(String accesstoken, String refreshToken, String username) {
         SavedLinkListFragment fragment = new SavedLinkListFragment();
+
         Bundle args = new Bundle();
+        args.putString("mAccesstoken", accesstoken);
+        args.putString("mRefreshToken", refreshToken);
+        args.putString("mUsername", username);
         fragment.setArguments(args);
+
         return fragment;
     }
 
@@ -75,7 +85,69 @@ public class SavedLinkListFragment extends Fragment {
         super.onCreate(savedInstanceState);
         redditLinkList = new ArrayList<>();
         adapter = new RedditLinkAdapter(this.getContext(), redditLinkList);
+
+        if(savedInstanceState != null){
+            mAccesstoken = savedInstanceState.getString("mAccesstoken");
+            mRefreshToken = savedInstanceState.getString("mRefreshToken");
+            mUsername = savedInstanceState.getString("mUsername");
+            mFilterSubreddit = savedInstanceState.getString("mFilterSubreddit");
+        }else{
+            Bundle bundle = getArguments();
+            if(bundle != null){
+                mAccesstoken = bundle.getString("mAccesstoken");
+                mRefreshToken = bundle.getString("mRefreshToken");
+                mUsername = bundle.getString("mUsername");
+            }
+
+            new FillRedditLinks().execute();
+        }
     }
+
+
+    private class FillRedditLinks extends AsyncTask<Void, Void, Void> {
+
+        List<RedditLink> tmpList;
+
+        public FillRedditLinks() {
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+
+            redditLinkList.clear();
+            redditLinkList.addAll(tmpList);
+            adapter.notifyDataSetChanged();
+        }
+
+        protected Void doInBackground(Void... arg0) {
+            AppDatabase database = AppDatabase.getDatabase(getContext());
+            List<Link> links = database.LinkModel().getAllLinks();
+            tmpList = new ArrayList<>();
+
+            for(Link link : links){
+                RedditLink redditlink = new RedditLink();
+
+                redditlink.setTitle(link.title);
+                redditlink.setNumberOfComments(link.numberOfComments);
+                redditlink.setSubreddit(link.subreddit);
+                redditlink.setCreated_utc(link.utc);
+                redditlink.setDomain(link.domain);
+                redditlink.setScore(link.score);
+                redditlink.setUrl(link.link);
+
+                tmpList.add(redditlink);
+            }
+
+            return null;
+        }
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -97,6 +169,18 @@ public class SavedLinkListFragment extends Fragment {
         });
 
         return view;
+    }
+
+
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putString("mAccesstoken", mAccesstoken);
+        outState.putString("mRefreshToken", mRefreshToken);
+        outState.putString("mUsername", mUsername);
+        outState.putString("mFilterSubreddit", mFilterSubreddit);
     }
 
     @Override
@@ -121,37 +205,30 @@ public class SavedLinkListFragment extends Fragment {
      * fragment to allow an interaction in this fragment to be communicated
      * to the activity and potentially other fragments contained in that
      * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
 
 
-    public void startGettingLinks(String accesstoken, String refreshToken, String username){
+    /**
+     * Filters the links - shows only those which are in the specific subreddit
+     * @param filter
+     */
+    public void setFilter(String filter){
+        mFilterSubreddit = filter;
+        adapter.getFilter().filter(filter);
+    }
+
+
+    public void setTokensAndUsername(String accesstoken, String refreshToken, String username){
         mAccesstoken = accesstoken;
         mRefreshToken = refreshToken;
         mUsername = username;
-        //startGettingLinks();
     }
 
     private void startGettingLinks(){
         // TODO remove and implement adding newer than last
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-                AppDatabase database = AppDatabase.getDatabase(getContext().getApplicationContext());
-
-                database.SubredditModel().removeAllSubreddits();
-            }
-        };
-
-        thread.start();
-
         redditLinkList.clear();
         getSavedLinks("");
     }
@@ -166,11 +243,28 @@ public class SavedLinkListFragment extends Fragment {
         redditLinkList.add(redditlink);
 
         final String subredditname = redditlink.getSubreddit();
+        final String newLinkUrl = redditlink.getUrl();
+        final String newLinkDomain = redditlink.getDomain();
+        final String newLinkTitle = redditlink.getTitle();
+        final int newLinkScore = redditlink.getScore();
+        final String newLinkSubreddit = redditlink.getSubreddit();
+        final int newLinkNoC = redditlink.getNumberOfComments();
+        final long newLinkUTC = redditlink.getCreated_utc();
 
         Thread thread = new Thread() {
             @Override
             public void run() {
                 AppDatabase database = AppDatabase.getDatabase(getContext().getApplicationContext());
+
+                database.LinkModel().addLink(Link.builder()
+                                                    .setLink(newLinkUrl)
+                                                    .setDomain(newLinkDomain)
+                                                    .setNumberOfComments(newLinkNoC)
+                                                    .setScore(newLinkScore)
+                                                    .setSubreddit(newLinkSubreddit)
+                                                    .setTitle(newLinkTitle)
+                                                    .setUtc(newLinkUTC)
+                                                    .build());
 
                 Subreddit sub = Subreddit.builder().setSubredditname(subredditname).build();
                 database.SubredditModel().addSubreddit(sub);
@@ -190,58 +284,68 @@ public class SavedLinkListFragment extends Fragment {
      */
     private void adaptJson(String jsonStr){
         try {
-            JSONObject jsonObj = new JSONObject(jsonStr).getJSONObject("data");
-            JSONArray children = jsonObj.getJSONArray("children");
-            RedditLink redditlink = null;
-            JSONObject jsonData = null;
+            JSONObject jsonObj = new JSONObject(jsonStr);
 
-            sumLinks += children.length();
+            if(jsonObj.has("error")){
+                String errorString = "Error: " + jsonObj.getString("error");
+                if (jsonObj.has("message"))
+                    errorString += "-" + jsonObj.getString("message");
 
-            for(int i = 0 ; i < children.length(); i++){
-                jsonData = children.getJSONObject(i).getJSONObject("data");
-                redditlink = new RedditLink();
-
-                if(jsonData.has("title"))
-                    redditlink.setTitle(jsonData.getString("title"));
-                else if(jsonData.has("body"))
-                    redditlink.setTitle(jsonData.getString("body"));
-                else redditlink.setTitle("no title");
-
-                if(jsonData.has("subreddit_name_prefixed")) {
-                    redditlink.setSubreddit(jsonData.getString("subreddit_name_prefixed"));
-                }
-                else redditlink.setSubreddit("NA");
-
-                if(jsonData.has("num_comments"))
-                    redditlink.setNumberOfComments(jsonData.getInt("num_comments"));
-
-                if(jsonData.has("score"))
-                    redditlink.setScore(jsonData.getInt("score"));
-
-                if(jsonData.has("domain"))
-                    redditlink.setDomain(jsonData.getString("domain"));
-
-                if(jsonData.has("url"))
-                    redditlink.setUrl(jsonData.getString("url"));
-
-                if(jsonData.has("link_url"))
-                    redditlink.setUrl(jsonData.getString("link_url"));
-
-                //TODO change back to 30
-                addToLinkList(redditlink,
-                        children.length() < 40 && i + 1 == children.length());
-            }
-
-            if(children.length() < 40) { //TODO change back to 30
-                Log.e(TAG,"getting Links finished with " + sumLinks + " Links");
                 mSwipeRefreshLayout.setRefreshing(false);
-                adapter.notifyDataSetChanged();
-            }
-            else{
-                if(jsonObj != null && jsonObj.has("after"))
-                    getSavedLinks(jsonObj.getString("after"));
-            }
 
+                Toast.makeText(getContext(), errorString, Toast.LENGTH_SHORT).show();
+            }else{
+                jsonObj = jsonObj.getJSONObject("data");
+
+                JSONArray children = jsonObj.getJSONArray("children");
+                RedditLink redditlink = null;
+                JSONObject jsonData = null;
+
+                sumLinks += children.length();
+
+                for (int i = 0; i < children.length(); i++) {
+                    jsonData = children.getJSONObject(i).getJSONObject("data");
+                    redditlink = new RedditLink();
+
+                    if (jsonData.has("title"))
+                        redditlink.setTitle(jsonData.getString("title"));
+                    else if (jsonData.has("body"))
+                        redditlink.setTitle(jsonData.getString("body"));
+                    else redditlink.setTitle("no title");
+
+                    if (jsonData.has("subreddit_name_prefixed")) {
+                        redditlink.setSubreddit(jsonData.getString("subreddit_name_prefixed"));
+                    } else redditlink.setSubreddit("NA");
+
+                    if (jsonData.has("num_comments"))
+                        redditlink.setNumberOfComments(jsonData.getInt("num_comments"));
+
+                    if (jsonData.has("score"))
+                        redditlink.setScore(jsonData.getInt("score"));
+
+                    if (jsonData.has("domain"))
+                        redditlink.setDomain(jsonData.getString("domain"));
+
+                    if (jsonData.has("url"))
+                        redditlink.setUrl(jsonData.getString("url"));
+
+                    if (jsonData.has("link_url"))
+                        redditlink.setUrl(jsonData.getString("link_url"));
+
+                    //TODO make 30 variable. Attention there seems to be a max number lower than reddits
+                    addToLinkList(redditlink,
+                            children.length() < 30 && i + 1 == children.length());
+                }
+
+                if (children.length() < 30) {
+                    Log.e(TAG, "getting Links finished with " + sumLinks + " Links");
+                    mSwipeRefreshLayout.setRefreshing(false);
+                    adapter.notifyDataSetChanged();
+                } else {
+                    if (jsonObj != null && jsonObj.has("after"))
+                        getSavedLinks(jsonObj.getString("after"));
+                }
+            }
         }catch(JSONException e){
             Log.e(TAG,e.getMessage());
             e.printStackTrace();
@@ -260,7 +364,7 @@ public class SavedLinkListFragment extends Fragment {
 
             Request request = new Request.Builder()
                     .addHeader("Authorization", "bearer " + mAccesstoken)
-                    .url("https://oauth.reddit.com/user/" + mUsername + "/saved/.json?limit=30" + afterItem) //sr=fitness
+                    .url("https://oauth.reddit.com/user/" + mUsername + "/saved/.json?limit=30" + afterItem)
                     .build();
 
 

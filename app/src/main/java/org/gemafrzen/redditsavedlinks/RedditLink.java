@@ -10,7 +10,7 @@ public class RedditLink {
     private String domain; //e.g.: 'self.Fitness'
     private String url;
     private int numberOfComments; //num_comments
-    private int created_utc; //in unix time
+    private long created_utc; //in unix time
     private int score;
 
 
@@ -57,11 +57,11 @@ public class RedditLink {
         this.numberOfComments = numberOfComments;
     }
 
-    public int getCreated_utc() {
+    public long getCreated_utc() {
         return created_utc;
     }
 
-    public void setCreated_utc(int created_utc) {
+    public void setCreated_utc(long created_utc) {
         this.created_utc = created_utc;
     }
 
