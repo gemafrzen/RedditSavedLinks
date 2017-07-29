@@ -22,6 +22,9 @@ public interface LinkDao {
     @Query("select * from link where id = :id")
     public List<Link> getLink(long id);
 
+    @Query("select * from link where link = :link")
+    public List<Link> getLink(String link);
+
     @Query("select * from link where subreddit = :subreddit")
     public List<Link> getLinkFromSubreddit(String subreddit);
 
