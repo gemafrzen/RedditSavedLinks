@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@color/colorPopupBackground"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        style="@style/popupStyleLayout">
+
+        <TextView
+            android:id="@+id/textOpenBrowser"
+            android:text="@string/popup_open_link_in_browser"
+            style="@style/popupStyleText" />
+
+        <TextView
+            android:id="@+id/textUnsaveSave"
+            android:text="@string/popup_unsave_link_in_reddit"
+            style="@style/popupStyleText"/>
+
+        <TextView
+            android:id="@+id/textDeleteLink"
+            android:text="@string/popup_delete_link_from_app"
+            style="@style/popupStyleText" />
+
+        <TextView
+            android:id="@+id/textDeleteUnsaveLink"
+            style="@style/popupStyleText"
+            android:text="@string/popup_delete_unsave_link_from_app" />
+    </LinearLayout>
+</FrameLayout>

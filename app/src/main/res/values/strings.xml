@@ -9,6 +9,8 @@
 
     <string name="action_settings">Settings</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="popup_unsave_link_in_reddit">Unsave redditLink in reddit</string>
+    <string name="popup_delete_link_from_app">Delete redditLink from app</string>
+    <string name="popup_delete_unsave_link_from_app">Delete and unsave redditLink</string>
+    <string name="popup_open_link_in_browser">Open redditLink in browser</string>
 </resources>

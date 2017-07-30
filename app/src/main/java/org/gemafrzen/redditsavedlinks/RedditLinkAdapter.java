@@ -2,13 +2,17 @@ package org.gemafrzen.redditsavedlinks;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import org.gemafrzen.redditsavedlinks.db.entities.RedditLink;
@@ -59,6 +63,14 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
     }
 
 
+    private void deleteLink(int position){
+        /*AppDatabase database = AppDatabase.getDatabase(mContext.getApplicationContext());
+        filteredLinkList.get(position)
+        database.LinkModel().deleteLink
+        */
+    }
+
+
     @Override
     public Filter getFilter() {
         return mFilter;
@@ -85,8 +97,59 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
                         openInBrowser(position);
                     }
                 });
+
+                cardView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                            onCardClickOpenPopup(v, getAdapterPosition());
+                           return true;
+                        }
+                });
             }
         }
+
+    }
+
+    public void onCardClickOpenPopup(View anchorView, final int adapterPosition) {
+        LayoutInflater vi = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+        View popupView = vi.inflate(R.layout.popup_main, null);
+
+        PopupWindow popupWindow = new PopupWindow(popupView,
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+
+        // Example: If you have a TextView inside `popup_layout.xml`
+        TextView tv = (TextView) popupView.findViewById(R.id.textOpenBrowser);
+        tv.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                openInBrowser(adapterPosition);
+            }
+        });
+
+        tv = (TextView) popupView.findViewById(R.id.textDeleteLink);
+        tv.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                deleteLink(adapterPosition);
+            }
+        });
+
+        // If the PopupWindow should be focusable
+        popupWindow.setFocusable(true);
+
+        // If you need the PopupWindow to dismiss when when touched outside
+        popupWindow.setBackgroundDrawable(new ColorDrawable());
+
+
+        int location[] = new int[2];
+
+        // Get the View's(the one that was clicked in the Fragment) location
+        anchorView.getLocationOnScreen(location);
+
+        // Using location, the PopupWindow will be displayed right under anchorView
+        popupWindow.showAtLocation(anchorView, Gravity.NO_GRAVITY,
+                        location[0], location[1]);
     }
 
 
