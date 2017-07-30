@@ -15,12 +15,10 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import org.gemafrzen.redditsavedlinks.R;
-import org.gemafrzen.redditsavedlinks.RedditLink;
 import org.gemafrzen.redditsavedlinks.RedditLinkAdapter;
 import org.gemafrzen.redditsavedlinks.db.AppDatabase;
-import org.gemafrzen.redditsavedlinks.db.entities.Link;
+import org.gemafrzen.redditsavedlinks.db.entities.RedditLink;
 import org.gemafrzen.redditsavedlinks.db.entities.Subreddit;
-import org.gemafrzen.redditsavedlinks.db.entities.UserSettings;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,8 +27,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -114,6 +110,7 @@ public class SavedLinkListFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            tmpList = new ArrayList<>();
         }
 
         @Override
@@ -127,22 +124,7 @@ public class SavedLinkListFragment extends Fragment {
 
         protected Void doInBackground(Void... arg0) {
             AppDatabase database = AppDatabase.getDatabase(getContext());
-            List<Link> links = database.LinkModel().getAllLinks();
-            tmpList = new ArrayList<>();
-
-            for(Link link : links){
-                RedditLink redditlink = new RedditLink();
-
-                redditlink.setTitle(link.title);
-                redditlink.setNumberOfComments(link.numberOfComments);
-                redditlink.setSubreddit(link.subreddit);
-                redditlink.setCreated_utc(link.utc);
-                redditlink.setDomain(link.domain);
-                redditlink.setScore(link.score);
-                redditlink.setUrl(link.link);
-
-                tmpList.add(redditlink);
-            }
+            tmpList.addAll(database.LinkModel().getAllRedditLinks());
 
             return null;
         }
@@ -170,7 +152,6 @@ public class SavedLinkListFragment extends Fragment {
 
         return view;
     }
-
 
 
     @Override
@@ -226,6 +207,7 @@ public class SavedLinkListFragment extends Fragment {
         mRefreshToken = refreshToken;
         mUsername = username;
     }
+
 
     private void startGettingLinks(){
         // TODO remove and implement adding newer than last
@@ -362,7 +344,7 @@ public class SavedLinkListFragment extends Fragment {
          * @throws JSONException exception while reading a json String into an object
          */
         private RedditLink readJsonChild(JSONObject jsonData) throws JSONException{
-            RedditLink redditlink = new RedditLink();
+            RedditLink redditlink = RedditLink.builder().build();
 
             if (jsonData.has("title"))
                 redditlink.setTitle(jsonData.getString("title"));
@@ -384,42 +366,26 @@ public class SavedLinkListFragment extends Fragment {
                 redditlink.setDomain(jsonData.getString("domain"));
 
             if (jsonData.has("url"))
-                redditlink.setUrl(jsonData.getString("url"));
+                redditlink.setLink(jsonData.getString("url"));
 
             if (jsonData.has("link_url"))
-                redditlink.setUrl(jsonData.getString("link_url"));
+                redditlink.setLink(jsonData.getString("link_url"));
 
             return redditlink;
         }
 
         /**
          * Save reddit link into the database
-         * @param redditlink Redditlink TODO change to Link class
+         * @param redditlink Redditlink TODO change to RedditLink class
          */
         private void addToLinkList(RedditLink redditlink){
-            String subredditname = redditlink.getSubreddit();
-            String newLinkUrl = redditlink.getUrl();
-            String newLinkDomain = redditlink.getDomain();
-            String newLinkTitle = redditlink.getTitle();
-            int newLinkScore = redditlink.getScore();
-            String newLinkSubreddit = redditlink.getSubreddit();
-            int newLinkNoC = redditlink.getNumberOfComments();
-            long newLinkUTC = redditlink.getCreated_utc();
 
             AppDatabase database = AppDatabase.getDatabase(getContext().getApplicationContext());
 
-            database.LinkModel().addLink(Link.builder()
-                    .setLink(newLinkUrl)
-                    .setDomain(newLinkDomain)
-                    .setNumberOfComments(newLinkNoC)
-                    .setScore(newLinkScore)
-                    .setSubreddit(newLinkSubreddit)
-                    .setTitle(newLinkTitle)
-                    .setUtc(newLinkUTC)
-                    .build());
+            database.LinkModel().addLink(redditlink);
 
             database.SubredditModel().addSubreddit(
-                    Subreddit.builder().setSubredditname(subredditname).build());
+                    Subreddit.builder().setSubredditname(redditlink.getSubreddit()).build());
         }
 
     }

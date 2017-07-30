@@ -4,13 +4,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.TextView;
+
+import org.gemafrzen.redditsavedlinks.db.entities.RedditLink;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,17 +52,18 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
         return filteredLinkList.size();
     }
 
-    private void openInBrowser(int position){
-        Log.e(TAG, "redditLinkList.get(position).getUrl() = " + filteredLinkList.get(position).getUrl());
 
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(filteredLinkList.get(position).getUrl()));
+    private void openInBrowser(int position){
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(filteredLinkList.get(position).getLink()));
         mContext.startActivity(intent);
     }
+
 
     @Override
     public Filter getFilter() {
         return mFilter;
     }
+
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView title, subreddit, comments, domain;
@@ -75,17 +77,18 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
 
             View cardView = view.findViewById(R.id.card_view);
 
-            if(cardView != null) cardView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    int position =  getAdapterPosition();
-                    openInBrowser(position);
-                    return true;
-                }
-
-            });
+            if(cardView != null){
+                cardView.setOnClickListener(new View.OnClickListener(){
+                    @Override
+                    public void onClick(View view) {
+                        int position =  getAdapterPosition();
+                        openInBrowser(position);
+                    }
+                });
+            }
         }
     }
+
 
     private class RedditLinkFilter extends Filter {
         @Override

@@ -7,15 +7,15 @@ import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
 
 import org.gemafrzen.redditsavedlinks.db.dao.CategoryDao;
-import org.gemafrzen.redditsavedlinks.db.dao.LinkDao;
+import org.gemafrzen.redditsavedlinks.db.dao.RedditLinkDao;
 import org.gemafrzen.redditsavedlinks.db.dao.SubredditDao;
 import org.gemafrzen.redditsavedlinks.db.dao.UserSettingsDao;
 import org.gemafrzen.redditsavedlinks.db.entities.Category;
-import org.gemafrzen.redditsavedlinks.db.entities.Link;
+import org.gemafrzen.redditsavedlinks.db.entities.RedditLink;
 import org.gemafrzen.redditsavedlinks.db.entities.Subreddit;
 import org.gemafrzen.redditsavedlinks.db.entities.UserSettings;
 
-@Database(entities = {Category.class, Link.class, Subreddit.class, UserSettings.class}, version = 1, exportSchema = false)
+@Database(entities = {Category.class, RedditLink.class, Subreddit.class, UserSettings.class}, version = 1, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     private static AppDatabase INSTANCE;
@@ -24,7 +24,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract SubredditDao SubredditModel();
     public abstract UserSettingsDao UserSettingsModel();
     public abstract CategoryDao CategoryModel();
-    public abstract LinkDao LinkModel();
+    public abstract RedditLinkDao LinkModel();
 
     public static AppDatabase getDatabase(Context context) {
         if (INSTANCE == null) {
