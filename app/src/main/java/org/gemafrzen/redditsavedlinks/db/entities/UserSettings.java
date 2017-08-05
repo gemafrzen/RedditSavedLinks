@@ -16,13 +16,16 @@ public class UserSettings {
     public String accesstoken;
     public String refreshtoken;
     public boolean isCurrentUser;
+    public long accesstokenExpiresIn;
 
 
-    public UserSettings(long id, String username, String accesstoken, String refreshtoken, boolean isCurrentUser) {
+    public UserSettings(long id, String username, String accesstoken, String refreshtoken,
+                        long accesstokenExpiresIn, boolean isCurrentUser) {
         this.id = id;
         this.username = username;
         this.accesstoken = accesstoken;
         this.refreshtoken = refreshtoken;
+        this.accesstokenExpiresIn = accesstokenExpiresIn;
         this.isCurrentUser = isCurrentUser;
     }
 
@@ -35,6 +38,7 @@ public class UserSettings {
         private String username = "";
         private String accesstoken = "";
         private String refreshtoken = "";
+        private long accesstokenExpiresIn = 0;
         private boolean isCurrentUser = false;
 
         public UserSettingsBuilder setId(long id) {
@@ -62,8 +66,13 @@ public class UserSettings {
             return this;
         }
 
+        public UserSettingsBuilder setAccesstokenExpiresIn(long accesstokenExpiresIn) {
+            this.accesstokenExpiresIn = accesstokenExpiresIn;
+            return this;
+        }
+
         public UserSettings build() {
-            return new UserSettings(id, username, accesstoken, refreshtoken, isCurrentUser);
+            return new UserSettings(id, username, accesstoken, refreshtoken, accesstokenExpiresIn, isCurrentUser);
         }
     }
 
@@ -74,6 +83,7 @@ public class UserSettings {
                 ", username='" + username +
                 ", accesstoken='" + accesstoken +
                 ", refreshtoken='" + refreshtoken +
+                ", accesstokenExpiresIn='" + accesstokenExpiresIn +
                 ", isCurrentUser='" + isCurrentUser +
                 '}';
     }

@@ -15,7 +15,7 @@ import org.gemafrzen.redditsavedlinks.db.entities.RedditLink;
 import org.gemafrzen.redditsavedlinks.db.entities.Subreddit;
 import org.gemafrzen.redditsavedlinks.db.entities.UserSettings;
 
-@Database(entities = {Category.class, RedditLink.class, Subreddit.class, UserSettings.class}, version = 1, exportSchema = false)
+@Database(entities = {Category.class, RedditLink.class, Subreddit.class, UserSettings.class}, version = 2, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     private static AppDatabase INSTANCE;

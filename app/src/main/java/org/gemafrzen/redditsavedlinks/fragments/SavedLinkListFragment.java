@@ -16,9 +16,12 @@ import android.widget.Toast;
 
 import org.gemafrzen.redditsavedlinks.R;
 import org.gemafrzen.redditsavedlinks.RedditLinkAdapter;
+import org.gemafrzen.redditsavedlinks.RefreshAccessToken;
 import org.gemafrzen.redditsavedlinks.db.AppDatabase;
 import org.gemafrzen.redditsavedlinks.db.entities.RedditLink;
 import org.gemafrzen.redditsavedlinks.db.entities.Subreddit;
+import org.gemafrzen.redditsavedlinks.exceptions.NoCurrentUserFoundException;
+import org.gemafrzen.redditsavedlinks.exceptions.NoRefreshOfTokenException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -253,9 +256,20 @@ public class SavedLinkListFragment extends Fragment {
         protected Void doInBackground(Void... arg0) {
             String responseString = "";
 
-            do{
-                responseString = getSavedLinks(responseString);
-            }while(!responseString.isEmpty());
+            try{
+                RefreshAccessToken refresher = new RefreshAccessToken();
+                refresher.refresh(getContext());
+
+                do{
+                    responseString = getSavedLinks(responseString);
+                }while(!responseString.isEmpty());
+
+            }catch(NoRefreshOfTokenException e){
+                errorMessage = e.getErrormessage();
+            }catch(NoCurrentUserFoundException e){
+                errorMessage = "No active user available!";
+            }
+
 
             return null;
         }
@@ -276,8 +290,7 @@ public class SavedLinkListFragment extends Fragment {
                         .url("https://oauth.reddit.com/user/" + mUsername + "/saved/.json?limit=30" + afterItem)
                         .build();
 
-                try {
-                    Response response = client.newCall(request).execute();
+                try(Response response = client.newCall(request).execute()) {
 
                     if (!response.isSuccessful())
                         errorMessage = "General I/O response exception: " + response.code();

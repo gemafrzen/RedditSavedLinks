@@ -20,6 +20,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.Calendar;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -46,7 +47,7 @@ public class LoginFragment extends Fragment {
     private static final String AUTH_URL =
             "https://www.reddit.com/api/v1/authorize.compact?client_id=%s" +
                     "&response_type=code&state=%s&redirect_uri=%s&" +
-                    "duration=temporary&scope=history,identity";
+                    "duration=permanent&scope=history,identity";
 
     private static final String CLIENT_ID = "l2wLkGX9_udUbg";
 
@@ -58,6 +59,7 @@ public class LoginFragment extends Fragment {
     private String accessToken;
     private String refreshToken;
     private String username;
+    private long accessTokenExpiresIn;
 
     private OnFragmentInteractionListener mListener;
 
@@ -82,6 +84,7 @@ public class LoginFragment extends Fragment {
         accessToken = "";
         refreshToken = "";
         username = "";
+        accessTokenExpiresIn = 0;
     }
 
     @Override
@@ -177,9 +180,12 @@ public class LoginFragment extends Fragment {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String json = response.body().string();
-
+                Log.e(TAG, json);
                 try {
                     JSONObject data = new JSONObject(json);
+                    accessTokenExpiresIn = Calendar.getInstance().getTimeInMillis()
+                                            + (data.optLong("expires_in") * 1000);
+
                     accessToken = data.optString("access_token");
                     refreshToken = data.optString("refresh_token");
 
@@ -249,6 +255,7 @@ public class LoginFragment extends Fragment {
                                                     .setisCurrentUser(true)
                                                     .setAccesstoken(accessToken)
                                                     .setRefreshtoken(refreshToken)
+                                                    .setAccesstokenExpiresIn(accessTokenExpiresIn)
                                                     .build());
     }
 
