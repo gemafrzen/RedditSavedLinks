@@ -384,6 +384,9 @@ public class SavedLinkListFragment extends Fragment {
             if (jsonData.has("link_url"))
                 redditlink.setLink(jsonData.getString("link_url"));
 
+            if (jsonData.has("name"))
+                redditlink.setFullname(jsonData.getString("name"));
+
             return redditlink;
         }
 

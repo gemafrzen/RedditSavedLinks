@@ -47,7 +47,7 @@ public class LoginFragment extends Fragment {
     private static final String AUTH_URL =
             "https://www.reddit.com/api/v1/authorize.compact?client_id=%s" +
                     "&response_type=code&state=%s&redirect_uri=%s&" +
-                    "duration=permanent&scope=history,identity";
+                    "duration=permanent&scope=history,identity,save";
 
     private static final String CLIENT_ID = "l2wLkGX9_udUbg";
 

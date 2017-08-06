@@ -31,8 +31,9 @@ public class RefreshAccessToken {
      * @throws NoCurrentUserFoundException
      * @throws NoRefreshOfTokenException
      */
-    public void refresh(Context context)
+    public String refresh(Context context)
             throws NoCurrentUserFoundException, NoRefreshOfTokenException{
+        String accesstoken = "";
 
         AppDatabase database = AppDatabase.getDatabase(context);
 
@@ -47,7 +48,11 @@ public class RefreshAccessToken {
                     Calendar.getInstance().getTimeInMillis() + 2000){
                 getNewAccesstoken(context, currentUserSettings);
             }
+
+            accesstoken = currentUserSettings.accesstoken;
         }
+
+        return accesstoken;
     }
 
     /**

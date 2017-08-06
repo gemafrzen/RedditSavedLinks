@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,11 +15,28 @@ import android.widget.Filterable;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import org.gemafrzen.redditsavedlinks.db.AppDatabase;
 import org.gemafrzen.redditsavedlinks.db.entities.RedditLink;
+import org.gemafrzen.redditsavedlinks.db.entities.UserSettings;
+import org.gemafrzen.redditsavedlinks.exceptions.NoCurrentUserFoundException;
+import org.gemafrzen.redditsavedlinks.exceptions.NoRefreshOfTokenException;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.MyViewHolder> implements Filterable{
 
@@ -63,11 +81,81 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
     }
 
 
+    private String getAccesstoken(){
+        String accesstoken = "";
+        //TODO async
+        AppDatabase db = AppDatabase.getDatabaseOnUIThread(mContext);
+
+        List<UserSettings> userSettingsList = db.UserSettingsModel().getUserSettings(true);
+
+        if(userSettingsList != null && userSettingsList.size() > 0){
+            UserSettings userSettings = userSettingsList.get(0);
+
+            if(userSettings.accesstokenExpiresIn <= (Calendar.getInstance().getTimeInMillis() + 2000)){
+                RefreshAccessToken refresher = new RefreshAccessToken();
+                try{
+                    accesstoken = refresher.refresh(mContext);
+                }catch(NoCurrentUserFoundException e){
+                    Toast.makeText(mContext, e.getMessage(), Toast.LENGTH_LONG);
+                }catch(NoRefreshOfTokenException e){
+                    Toast.makeText(mContext, e.getMessage(), Toast.LENGTH_LONG);
+                }
+            }else{
+                accesstoken = userSettings.accesstoken;
+            }
+
+        }
+
+        return accesstoken;
+    }
+
+    private void unsavesaveLink(final int position){
+        String accesstoken = getAccesstoken();
+        String command = "unsave";
+
+        if(!filteredLinkList.get(position).isSaved())
+            command = "save";
+
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .addHeader("Authorization", "bearer " + accesstoken)
+                .url("https://oauth.reddit.com/api/" + command)
+                .post(RequestBody.create(MediaType.parse("application/x-www-form-urlencoded"),
+                        "id=" + filteredLinkList.get(position).getFullname()
+                                ))
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            //TODO error handling
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e(TAG, "ERROR: " + e);
+                // TODO runOnUIThread
+                //Toast.makeText(mContext, " failed", Toast.LENGTH_LONG);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                Log.e(TAG, "unsave response = " + response.toString());
+                // TODO runOnUIThread
+                // Toast.makeText(mContext, "success", Toast.LENGTH_LONG);
+
+                filteredLinkList.get(position).setSaved(false);
+            }
+        });
+
+    }
+
+
     private void deleteLink(int position){
         /*AppDatabase database = AppDatabase.getDatabase(mContext.getApplicationContext());
         filteredLinkList.get(position)
         database.LinkModel().deleteLink
         */
+        Log.e(TAG, "deleteLink not yet implemented");
+
+        Toast.makeText(mContext.getApplicationContext(), "not yet implemented", Toast.LENGTH_LONG);
     }
 
 
@@ -111,11 +199,13 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
     }
 
     public void onCardClickOpenPopup(View anchorView, final int adapterPosition) {
+        if(filteredLinkList.size() <= adapterPosition) return;
+
         LayoutInflater vi = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         View popupView = vi.inflate(R.layout.popup_main, null);
 
-        PopupWindow popupWindow = new PopupWindow(popupView,
+        final PopupWindow popupWindow = new PopupWindow(popupView,
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 
         // Example: If you have a TextView inside `popup_layout.xml`
@@ -132,6 +222,29 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
             @Override
             public void onClick(View view) {
                 deleteLink(adapterPosition);
+                popupWindow.dismiss();
+            }
+        });
+
+        tv = (TextView) popupView.findViewById(R.id.textUnsaveSave);
+        tv.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                unsavesaveLink(adapterPosition);
+                popupWindow.dismiss();
+            }
+        });
+
+        if(!filteredLinkList.get(adapterPosition).isSaved())
+            tv.setText("save redditLink in reddit");
+
+        tv = (TextView) popupView.findViewById(R.id.textDeleteUnsaveLink);
+        tv.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                //unsavesaveLink(adapterPosition);
+                deleteLink(adapterPosition);
+                popupWindow.dismiss();
             }
         });
 

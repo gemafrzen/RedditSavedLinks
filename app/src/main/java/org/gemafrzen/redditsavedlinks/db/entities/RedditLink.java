@@ -17,24 +17,29 @@ public class RedditLink {
     private String subreddit;
     private String title;
     private String link;
+    private String fullname;
     private long utc;
     private int numberOfComments;
     private String image;
     private int score;
     private boolean isDeleted;
+    private boolean isSaved;
 
-    public RedditLink(long id, String domain, String subreddit, String title, String link, long utc,
-                      int numberOfComments, String image, int score, boolean isDeleted) {
+    public RedditLink(long id, String domain, String subreddit, String title, String link,
+                      String fullname, long utc, int numberOfComments, String image,
+                      int score, boolean isDeleted, boolean isSaved) {
         this.id = id;
         this.setDomain(domain);
         this.setSubreddit(subreddit);
         this.setTitle(title);
         this.setLink(link);
+        this.setFullname(fullname);
         this.setUtc(utc);
         this.setNumberOfComments(numberOfComments);
         this.setImage(image);
         this.setScore(score);
         this.setDeleted(isDeleted);
+        this.setSaved(isSaved);
     }
 
     public static RedditLinkBuilder builder(){
@@ -77,6 +82,14 @@ public class RedditLink {
         this.link = link;
     }
 
+    public String getFullname() {
+        return fullname;
+    }
+
+    public void setFullname(String fullname) {
+        this.fullname = fullname;
+    }
+
     public long getUtc() {
         return utc;
     }
@@ -117,6 +130,14 @@ public class RedditLink {
         isDeleted = deleted;
     }
 
+    public boolean isSaved() {
+        return isSaved;
+    }
+
+    public void setSaved(boolean saved) {
+        isSaved = saved;
+    }
+
     /**
      * Builder class for this class
      */
@@ -126,11 +147,13 @@ public class RedditLink {
         private String subreddit = "";
         private String title = "";
         private String link = "";
+        private String fullname = "";
         private long utc = 0;
         private int numberOfComments = 0;
         private String image  = "";
         private int score  = 0;
         private boolean isDeleted = false;
+        private boolean isSaved = true;
 
         public RedditLinkBuilder setId(long id) {
             this.id = id;
@@ -154,6 +177,11 @@ public class RedditLink {
 
         public RedditLinkBuilder setLink(String link) {
             this.link = link;
+            return this;
+        }
+
+        public RedditLinkBuilder setFullname(String fullname) {
+            this.fullname = fullname;
             return this;
         }
 
@@ -182,8 +210,14 @@ public class RedditLink {
             return this;
         }
 
+        public RedditLinkBuilder setIsSaved(boolean isSaved) {
+            this.isSaved = isSaved;
+            return this;
+        }
+
         public RedditLink build() {
-            return new RedditLink(id, domain, subreddit, title, link, utc, numberOfComments, image, score, isDeleted);
+            return new RedditLink(id, domain, subreddit, title, link, fullname, utc,
+                                    numberOfComments, image, score, isDeleted, isSaved);
         }
     }
 
@@ -191,15 +225,17 @@ public class RedditLink {
     public String toString() {
         return "Redditlink{" +
                 "id=" + getId() +
-                ", domain='" + getDomain() +
-                ", subreddit='" + getSubreddit() +
+                ", domain=" + getDomain() +
+                ", subreddit=" + getSubreddit() +
                 ", title='" + getTitle() +
-                ", link='" + getLink() +
-                ", utc='" + getUtc() +
-                ", numberOfComments='" + getNumberOfComments() +
-                ", image='" + getImage() +
-                ", score='" + getScore() +
-                ", isDeleted='" + isDeleted() +
+                "', link=" + getLink() +
+                ", fullname=" + getFullname() +
+                ", utc=" + getUtc() +
+                ", numberOfComments=" + getNumberOfComments() +
+                ", image=" + getImage() +
+                ", score=" + getScore() +
+                ", isDeleted=" + isDeleted() +
+                ", isSaved=" + isSaved() +
                 '}';
     }
 }
