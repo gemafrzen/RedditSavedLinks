@@ -19,7 +19,7 @@ public interface SubredditDao {
     @Query("select * from subreddit")
     public List<Subreddit> getAllSubreddits();
 
-    @Query("select * from subreddit order by subredditname")
+    @Query("select * from subreddit order by subredditname COLLATE NOCASE")
     public List<Subreddit> getAllSubredditsSorted();
 
     @Query("select * from subreddit where subredditname = :subreddit")
