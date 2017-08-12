@@ -258,7 +258,7 @@ public class SavedLinkListFragment extends Fragment {
 
             try{
                 RefreshAccessToken refresher = new RefreshAccessToken();
-                refresher.refresh(getContext());
+                mAccesstoken = refresher.refresh(getContext());
 
                 do{
                     responseString = getSavedLinks(responseString);
