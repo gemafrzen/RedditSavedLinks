@@ -16,30 +16,37 @@ public class RedditLink {
     private String domain;
     private String subreddit;
     private String title;
-    private String link;
+    private String url;
+    private String permaLink; // in reddit
     private String fullname;
+    private String selftext;
     private long utc;
     private int numberOfComments;
     private String image;
     private int score;
     private boolean isDeleted;
     private boolean isSaved;
+    private boolean isNsfw;
 
-    public RedditLink(long id, String domain, String subreddit, String title, String link,
-                      String fullname, long utc, int numberOfComments, String image,
-                      int score, boolean isDeleted, boolean isSaved) {
+    public RedditLink(long id, String domain, String subreddit, String title, String url,
+                      String permaLink, String fullname, String selftext, long utc,
+                      int numberOfComments, String image, int score, boolean isDeleted,
+                      boolean isSaved, boolean isNsfw) {
         this.id = id;
         this.setDomain(domain);
         this.setSubreddit(subreddit);
         this.setTitle(title);
-        this.setLink(link);
+        this.setUrl(url);
+        this.setPermaLink(permaLink);
         this.setFullname(fullname);
+        this.setSelftext(selftext);
         this.setUtc(utc);
         this.setNumberOfComments(numberOfComments);
         this.setImage(image);
         this.setScore(score);
         this.setDeleted(isDeleted);
         this.setSaved(isSaved);
+        this.setNsfw(isNsfw);
     }
 
     public static RedditLinkBuilder builder(){
@@ -74,12 +81,20 @@ public class RedditLink {
         this.title = title;
     }
 
-    public String getLink() {
-        return link;
+    public String getUrl() {
+        return url;
     }
 
-    public void setLink(String link) {
-        this.link = link;
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getPermaLink() {
+        return permaLink;
+    }
+
+    public void setPermaLink(String permaLink) {
+        this.permaLink = permaLink;
     }
 
     public String getFullname() {
@@ -88,6 +103,14 @@ public class RedditLink {
 
     public void setFullname(String fullname) {
         this.fullname = fullname;
+    }
+
+    public String getSelftext() {
+        return selftext;
+    }
+
+    public void setSelftext(String selftext) {
+        this.selftext = selftext;
     }
 
     public long getUtc() {
@@ -138,6 +161,14 @@ public class RedditLink {
         isSaved = saved;
     }
 
+    public boolean isNsfw() {
+        return this.isNsfw;
+    }
+
+    public void setNsfw(boolean isNsfw) {
+        this.isNsfw = isNsfw;
+    }
+
     /**
      * Builder class for this class
      */
@@ -146,14 +177,17 @@ public class RedditLink {
         private String domain = "";
         private String subreddit = "";
         private String title = "";
-        private String link = "";
+        private String url = "";
+        private String permaLink = "";
         private String fullname = "";
+        private String selftext = "";
         private long utc = 0;
         private int numberOfComments = 0;
         private String image  = "";
         private int score  = 0;
         private boolean isDeleted = false;
         private boolean isSaved = true;
+        private boolean isNsfw = false;
 
         public RedditLinkBuilder setId(long id) {
             this.id = id;
@@ -175,13 +209,23 @@ public class RedditLink {
             return this;
         }
 
-        public RedditLinkBuilder setLink(String link) {
-            this.link = link;
+        public RedditLinkBuilder setUrl(String url) {
+            this.url = url;
+            return this;
+        }
+
+        public RedditLinkBuilder setPermaLink(String permaLink) {
+            this.permaLink = permaLink;
             return this;
         }
 
         public RedditLinkBuilder setFullname(String fullname) {
             this.fullname = fullname;
+            return this;
+        }
+
+        public RedditLinkBuilder setSelftext(String selftext) {
+            this.selftext = selftext;
             return this;
         }
 
@@ -215,9 +259,14 @@ public class RedditLink {
             return this;
         }
 
+        public RedditLinkBuilder setNsfw(boolean isNsfw) {
+            this.isNsfw = isNsfw;
+            return this;
+        }
+
         public RedditLink build() {
-            return new RedditLink(id, domain, subreddit, title, link, fullname, utc,
-                                    numberOfComments, image, score, isDeleted, isSaved);
+            return new RedditLink(id, domain, subreddit, title, url, permaLink, fullname, selftext,
+                                  utc, numberOfComments, image, score, isDeleted, isSaved, isNsfw);
         }
     }
 
@@ -228,7 +277,7 @@ public class RedditLink {
                 ", domain=" + getDomain() +
                 ", subreddit=" + getSubreddit() +
                 ", title='" + getTitle() +
-                "', link=" + getLink() +
+                "', url=" + getUrl() +
                 ", fullname=" + getFullname() +
                 ", utc=" + getUtc() +
                 ", numberOfComments=" + getNumberOfComments() +
@@ -236,6 +285,7 @@ public class RedditLink {
                 ", score=" + getScore() +
                 ", isDeleted=" + isDeleted() +
                 ", isSaved=" + isSaved() +
+                ", isNsfw=" + isNsfw() +
                 '}';
     }
 }

@@ -23,8 +23,8 @@ public interface RedditLinkDao {
     @Query("select * from redditlink where id = :id")
     public List<RedditLink> getRedditLink(long id);
 
-    @Query("select * from redditlink where link = :link")
-    public List<RedditLink> getRedditLink(String link);
+    @Query("select * from redditlink where url = :url")
+    public List<RedditLink> getRedditLink(String url);
 
     @Query("select * from redditlink where subreddit = :subreddit")
     public List<RedditLink> getRedditLinkFromSubreddit(String subreddit);

@@ -22,8 +22,6 @@ import org.gemafrzen.redditsavedlinks.db.entities.RedditLink;
 import org.gemafrzen.redditsavedlinks.db.entities.UserSettings;
 import org.gemafrzen.redditsavedlinks.exceptions.NoCurrentUserFoundException;
 import org.gemafrzen.redditsavedlinks.exceptions.NoRefreshOfTokenException;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -76,7 +74,7 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
 
 
     private void openInBrowser(int position){
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(filteredLinkList.get(position).getLink()));
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(filteredLinkList.get(position).getUrl()));
         mContext.startActivity(intent);
     }
 
