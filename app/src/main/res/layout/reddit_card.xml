@@ -1,5 +1,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:longClickable="true">
@@ -44,6 +45,18 @@
                 card_view:layout_constraintTop_toBottomOf="@+id/subreddit" />
 
             <TextView
+                android:id="@+id/selftext"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:layout_marginTop="0dp"
+                card_view:layout_constraintTop_toBottomOf="@+id/title"
+                android:layout_marginRight="0dp"
+                card_view:layout_constraintRight_toRightOf="@+id/title"
+                android:layout_marginLeft="0dp"
+                card_view:layout_constraintLeft_toLeftOf="@+id/title" />
+
+            <TextView
                 android:id="@+id/lbl_comments"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -85,7 +98,8 @@
                 android:layout_marginTop="0dp"
                 android:text="@string/submitted_on"
                 android:textSize="12sp"
-                card_view:layout_constraintTop_toBottomOf="@+id/title" />
+                card_view:layout_constraintTop_toBottomOf="@+id/selftext"
+                tools:layout_editor_absoluteX="8dp" />
 
             <TextView
                 android:id="@+id/utc"
@@ -97,7 +111,6 @@
                 card_view:layout_constraintLeft_toRightOf="@+id/submitted"
                 card_view:layout_constraintTop_toTopOf="@+id/submitted"
                 android:layout_marginLeft="4dp" />
-
 
         </android.support.constraint.ConstraintLayout>
 

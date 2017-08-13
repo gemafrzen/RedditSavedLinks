@@ -68,6 +68,10 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
         holder.domain.setText(link.getDomain());
         holder.createdUtc.setText("" + link.getUtc());
 
+        if(!link.getSelftext().isEmpty()){
+            holder.selftext.setText(link.getSelftext());
+        }
+
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat format1 = new SimpleDateFormat("dd.MM.yyyy");
 
@@ -173,7 +177,7 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
 
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView title, subreddit, comments, domain, createdUtc;
+        public TextView title, subreddit, comments, domain, createdUtc, selftext;
 
         public MyViewHolder(View view) {
             super(view);
@@ -182,6 +186,7 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
             domain = (TextView) view.findViewById(R.id.domain);
             comments = (TextView) view.findViewById(R.id.comments);
             createdUtc = (TextView) view.findViewById(R.id.utc);
+            selftext = (TextView) view.findViewById(R.id.selftext);
 
             View cardView = view.findViewById(R.id.card_view);
 

@@ -390,6 +390,15 @@ public class SavedLinkListFragment extends Fragment {
             if (jsonData.has("created_utc"))
                 redditlink.setUtc(jsonData.getLong("created_utc"));
 
+            if (jsonData.has("selftext"))
+                redditlink.setSelftext(jsonData.getString("selftext"));
+
+            if (jsonData.has("permalink"))
+                redditlink.setPermaLink(jsonData.getString("permalink"));
+
+            if (jsonData.has("over_18"))
+                redditlink.setNsfw(jsonData.getBoolean("over_18"));
+
             return redditlink;
         }
 
