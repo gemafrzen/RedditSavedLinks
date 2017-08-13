@@ -24,6 +24,7 @@ import org.gemafrzen.redditsavedlinks.exceptions.NoCurrentUserFoundException;
 import org.gemafrzen.redditsavedlinks.exceptions.NoRefreshOfTokenException;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -65,6 +66,14 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
         holder.subreddit.setText(link.getSubreddit() );
         holder.comments.setText("" + link.getNumberOfComments());
         holder.domain.setText(link.getDomain());
+        holder.createdUtc.setText("" + link.getUtc());
+
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat format1 = new SimpleDateFormat("dd.MM.yyyy");
+
+        cal.setTimeInMillis(link.getUtc() * 1000);
+
+        holder.createdUtc.setText(format1.format(cal.getTime()));
     }
 
     @Override
@@ -94,9 +103,9 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
                 try{
                     accesstoken = refresher.refresh(mContext);
                 }catch(NoCurrentUserFoundException e){
-                    Toast.makeText(mContext, e.getMessage(), Toast.LENGTH_LONG);
+                    Toast.makeText(mContext, e.getMessage(), Toast.LENGTH_LONG).show();
                 }catch(NoRefreshOfTokenException e){
-                    Toast.makeText(mContext, e.getMessage(), Toast.LENGTH_LONG);
+                    Toast.makeText(mContext, e.getMessage(), Toast.LENGTH_LONG).show();
                 }
             }else{
                 accesstoken = userSettings.accesstoken;
@@ -164,7 +173,7 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
 
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView title, subreddit, comments, domain;
+        public TextView title, subreddit, comments, domain, createdUtc;
 
         public MyViewHolder(View view) {
             super(view);
@@ -172,6 +181,7 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
             subreddit = (TextView) view.findViewById(R.id.subreddit);
             domain = (TextView) view.findViewById(R.id.domain);
             comments = (TextView) view.findViewById(R.id.comments);
+            createdUtc = (TextView) view.findViewById(R.id.utc);
 
             View cardView = view.findViewById(R.id.card_view);
 

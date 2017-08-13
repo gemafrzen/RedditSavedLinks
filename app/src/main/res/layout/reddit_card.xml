@@ -48,11 +48,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="0dp"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="0dp"
                 android:text="@string/txt_comments"
                 android:textSize="@dimen/font_size_infos"
                 card_view:layout_constraintRight_toRightOf="@+id/title"
-                card_view:layout_constraintTop_toBottomOf="@+id/title" />
+                card_view:layout_constraintTop_toTopOf="@+id/comments" />
 
             <TextView
                 android:id="@+id/comments"
@@ -64,7 +64,7 @@
                 android:textAlignment="textEnd"
                 android:textSize="@dimen/font_size_infos"
                 card_view:layout_constraintRight_toLeftOf="@+id/lbl_comments"
-                card_view:layout_constraintTop_toTopOf="@+id/lbl_comments" />
+                card_view:layout_constraintTop_toTopOf="@+id/domain" />
 
             <TextView
                 android:id="@+id/domain"
@@ -72,11 +72,31 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="0dp"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="8dp"
                 android:text="@string/txt_blank_textview"
                 android:textSize="@dimen/font_size_infos"
                 card_view:layout_constraintLeft_toLeftOf="@+id/title"
+                card_view:layout_constraintTop_toBottomOf="@+id/submitted" />
+
+            <TextView
+                android:id="@+id/submitted"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0dp"
+                android:text="@string/submitted_on"
+                android:textSize="12sp"
                 card_view:layout_constraintTop_toBottomOf="@+id/title" />
+
+            <TextView
+                android:id="@+id/utc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0dp"
+                android:text="@string/txt_blank_textview"
+                android:textSize="12sp"
+                card_view:layout_constraintLeft_toRightOf="@+id/submitted"
+                card_view:layout_constraintTop_toTopOf="@+id/submitted"
+                android:layout_marginLeft="4dp" />
 
 
         </android.support.constraint.ConstraintLayout>

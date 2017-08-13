@@ -13,4 +13,5 @@
     <string name="popup_delete_link_from_app">Delete redditLink from app</string>
     <string name="popup_delete_unsave_link_from_app">Delete and unsave redditLink</string>
     <string name="popup_open_link_in_browser">Open redditLink in browser</string>
+    <string name="submitted_on">submitted on</string>
 </resources>
