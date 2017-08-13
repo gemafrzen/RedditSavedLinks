@@ -13,6 +13,11 @@
             style="@style/popupStyleText" />
 
         <TextView
+            android:id="@+id/textOpenReddit"
+            android:text="@string/popup_open_link_in_reddit"
+            style="@style/popupStyleText" />
+
+        <TextView
             android:id="@+id/textUnsaveSave"
             android:text="@string/popup_unsave_link_in_reddit"
             style="@style/popupStyleText"/>

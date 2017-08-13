@@ -91,6 +91,12 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
         mContext.startActivity(intent);
     }
 
+    private void openInReddit(int position){
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.reddit.com" +
+                filteredLinkList.get(position).getPermaLink()));
+        mContext.startActivity(intent);
+    }
+
 
     private String getAccesstoken(){
         String accesstoken = "";
@@ -227,6 +233,14 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
             @Override
             public void onClick(View view) {
                 openInBrowser(adapterPosition);
+            }
+        });
+
+        tv = (TextView) popupView.findViewById(R.id.textOpenReddit);
+        tv.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                openInReddit(adapterPosition);
             }
         });
 
