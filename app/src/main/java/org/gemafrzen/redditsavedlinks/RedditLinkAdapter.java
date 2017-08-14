@@ -296,23 +296,28 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
 
             FilterResults results = new FilterResults();
 
-            final List<RedditLink> list = originalLinkList;
-
-            int count = list.size();
-            final ArrayList<RedditLink> newFilteredlist = new ArrayList<>(count);
-
             String filterString = constraint.toString().toLowerCase();
-            String filterableString;
 
-            for (int i = 0; i < count; i++) {
-                filterableString = list.get(i).getSubreddit();
-                if (filterableString.toLowerCase().contains(filterString)) {
-                    newFilteredlist.add(list.get(i));
+            if(filterString.isEmpty()){
+                results.values = originalLinkList;
+                results.count = originalLinkList.size();
+            }else {
+                final List<RedditLink> list = originalLinkList;
+                int count = list.size();
+                final ArrayList<RedditLink> newFilteredlist = new ArrayList<>(count);
+
+                String filterableString;
+
+                for (int i = 0; i < count; i++) {
+                    filterableString = list.get(i).getSubreddit();
+                    if (filterableString.equalsIgnoreCase(filterString)) {
+                        newFilteredlist.add(list.get(i));
+                    }
                 }
-            }
 
-            results.values = newFilteredlist;
-            results.count = newFilteredlist.size();
+                results.values = newFilteredlist;
+                results.count = newFilteredlist.size();
+            }
 
             return results;
         }

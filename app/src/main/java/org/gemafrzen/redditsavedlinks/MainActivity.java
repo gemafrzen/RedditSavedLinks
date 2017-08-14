@@ -92,16 +92,18 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         Log.e(TAG, "ID = " + id + " and Title = " + item.getTitle());
-        /*if (id == R.id.nav_manage) {
-            // Handle the camera action
-        } */
+
 
         Fragment fragment = getFragmentManager().findFragmentById(R.id.fragmentframe);
 
         if(fragment instanceof LoginFragment){
             Toast.makeText(getApplicationContext(), "Please login first!", Toast.LENGTH_SHORT).show();
         }else if(fragment instanceof SavedLinkListFragment){
-            ((SavedLinkListFragment) fragment).setFilter(item.getTitle().toString());
+
+            if (id == R.id.nav_all)
+                ((SavedLinkListFragment) fragment).setFilter("");
+            else
+                ((SavedLinkListFragment) fragment).setFilter(item.getTitle().toString());
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
