@@ -67,10 +67,7 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
         holder.comments.setText("" + link.getNumberOfComments());
         holder.domain.setText(link.getDomain());
         holder.createdUtc.setText("" + link.getUtc());
-
-        if(!link.getSelftext().isEmpty()){
-            holder.selftext.setText(link.getSelftext());
-        }
+        holder.selftext.setText(link.getSelftext());
 
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat format1 = new SimpleDateFormat("dd.MM.yyyy");
