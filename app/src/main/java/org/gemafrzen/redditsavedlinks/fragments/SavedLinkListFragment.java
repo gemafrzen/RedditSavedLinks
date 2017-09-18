@@ -360,10 +360,16 @@ public class SavedLinkListFragment extends Fragment {
             RedditLink redditlink = RedditLink.builder().build();
 
             if (jsonData.has("title"))
+                //thread
                 redditlink.setTitle(jsonData.getString("title"));
-            else if (jsonData.has("body"))
-                redditlink.setTitle(jsonData.getString("body"));
-            else redditlink.setTitle("no title");
+            else{
+                //comment
+                if (jsonData.has("link_title"))
+                    redditlink.setTitle(jsonData.getString("link_title"));
+
+                if (jsonData.has("body"))
+                    redditlink.setSelftext(jsonData.getString("body"));
+            }
 
             if (jsonData.has("subreddit_name_prefixed")) {
                 redditlink.setSubreddit(jsonData.getString("subreddit_name_prefixed"));

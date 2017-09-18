@@ -37,44 +37,40 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.MyViewHolder> implements Filterable{
+public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.CardViewHolder> implements Filterable{
 
     private String TAG = RedditLinkAdapter.class.getSimpleName();
+
+    public static final int VIEWHOLDER_TYPE_THREAD = 1;
+    public static final int VIEWHOLDER_TYPE_COMMENT = 2;
+
     private Context mContext;
     private List<RedditLink> originalLinkList;
     private List<RedditLink> filteredLinkList;
-    private RedditLinkFilter mFilter = new RedditLinkFilter();
+    private RedditLinkFilter mFilter;
+    private SimpleDateFormat mFormat;
 
     public RedditLinkAdapter(Context mContext, List<RedditLink> linkList) {
         this.mContext = mContext;
         this.originalLinkList = linkList;
         this.filteredLinkList = linkList;
+        mFormat = new SimpleDateFormat("dd.MM.yyyy");
+        mFilter = new RedditLinkFilter();
     }
 
     @Override
-    public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.reddit_card, parent, false);
+    public CardViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        LayoutInflater layoutInflater = LayoutInflater.from(mContext);
 
-        return new MyViewHolder(itemView);
+        if(viewType == VIEWHOLDER_TYPE_COMMENT)
+            return new CardCommentViewHolder(layoutInflater, parent);
+        else // VIEWHOLDER_TYPE_THREAD
+            return new CardThreadViewHolder(layoutInflater, parent);
     }
 
     @Override
-    public void onBindViewHolder(final MyViewHolder holder, int position) {
-        RedditLink link = filteredLinkList.get(position);
-        holder.title.setText(link.getTitle());
-        holder.subreddit.setText(link.getSubreddit() );
-        holder.comments.setText("" + link.getNumberOfComments());
-        holder.domain.setText(link.getDomain());
-        holder.createdUtc.setText("" + link.getUtc());
-        holder.selftext.setText(link.getSelftext());
-
-        Calendar cal = Calendar.getInstance();
-        SimpleDateFormat format1 = new SimpleDateFormat("dd.MM.yyyy");
-
-        cal.setTimeInMillis(link.getUtc() * 1000);
-
-        holder.createdUtc.setText(format1.format(cal.getTime()));
+    public void onBindViewHolder(final CardViewHolder holder, int position) {
+        holder.bind(filteredLinkList.get(position));
     }
 
     @Override
@@ -82,6 +78,14 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
         return filteredLinkList.size();
     }
 
+
+    @Override
+    public int getItemViewType(int position) {
+        if(filteredLinkList.get(position).getDomain().isEmpty())
+            return VIEWHOLDER_TYPE_COMMENT;
+        else
+            return VIEWHOLDER_TYPE_THREAD;
+    }
 
     private void openInBrowser(int position){
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(filteredLinkList.get(position).getUrl()));
@@ -179,19 +183,42 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
     }
 
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
+    public abstract class CardViewHolder extends RecyclerView.ViewHolder
+            implements View.OnClickListener, View.OnLongClickListener {
+
+        public CardViewHolder(View view){
+            super(view);
+        }
+
+        @Override
+        public void onClick(View view) {
+            openInBrowser(getAdapterPosition());
+        }
+
+        @Override
+        public boolean onLongClick(View view) {
+            onCardClickOpenPopup(view, getAdapterPosition());
+            return true;
+        }
+
+        public abstract void bind(RedditLink redditLink);
+    }
+
+
+    public class CardThreadViewHolder extends CardViewHolder {
         public TextView title, subreddit, comments, domain, createdUtc, selftext;
 
-        public MyViewHolder(View view) {
-            super(view);
-            title = (TextView) view.findViewById(R.id.title);
-            subreddit = (TextView) view.findViewById(R.id.subreddit);
-            domain = (TextView) view.findViewById(R.id.domain);
-            comments = (TextView) view.findViewById(R.id.comments);
-            createdUtc = (TextView) view.findViewById(R.id.utc);
-            selftext = (TextView) view.findViewById(R.id.selftext);
+        public CardThreadViewHolder(LayoutInflater inflater, ViewGroup parent){
+            super(inflater.inflate(R.layout.reddit_card, parent, false));
 
-            View cardView = view.findViewById(R.id.card_view);
+            title = (TextView) itemView.findViewById(R.id.title);
+            subreddit = (TextView) itemView.findViewById(R.id.subreddit);
+            domain = (TextView) itemView.findViewById(R.id.domain);
+            comments = (TextView) itemView.findViewById(R.id.comments);
+            createdUtc = (TextView) itemView.findViewById(R.id.utc);
+            selftext = (TextView) itemView.findViewById(R.id.selftext);
+
+            /*View cardView = view.findViewById(R.id.card_view);
 
             if(cardView != null){
                 cardView.setOnClickListener(new View.OnClickListener(){
@@ -209,10 +236,47 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.My
                            return true;
                         }
                 });
-            }
+            }*/
         }
 
+        public void bind(RedditLink redditLink){
+            title.setText(redditLink.getTitle());
+            subreddit.setText(redditLink.getSubreddit() );
+            comments.setText("" + redditLink.getNumberOfComments());
+            domain.setText(redditLink.getDomain());
+            createdUtc.setText("" + redditLink.getUtc());
+            selftext.setText(redditLink.getSelftext());
+
+            Calendar cal = Calendar.getInstance();
+            cal.setTimeInMillis(redditLink.getUtc() * 1000);
+            createdUtc.setText(mFormat.format(cal.getTime()));
+        }
     }
+
+
+    public class CardCommentViewHolder extends CardViewHolder {
+        public TextView title, subreddit, createdUtc, selftext;
+
+        public CardCommentViewHolder(LayoutInflater inflater, ViewGroup parent){
+            super(inflater.inflate(R.layout.reddit_card_comment, parent, false));
+            title = (TextView) itemView.findViewById(R.id.title);
+            subreddit = (TextView) itemView.findViewById(R.id.subreddit);
+            createdUtc = (TextView) itemView.findViewById(R.id.utc);
+            selftext = (TextView) itemView.findViewById(R.id.selftext);
+        }
+
+        public void bind(RedditLink redditLink){
+            title.setText(redditLink.getTitle());
+            subreddit.setText(redditLink.getSubreddit() );
+            createdUtc.setText("" + redditLink.getUtc());
+            selftext.setText(redditLink.getSelftext());
+
+            Calendar cal = Calendar.getInstance();
+            cal.setTimeInMillis(redditLink.getUtc() * 1000);
+            createdUtc.setText(mFormat.format(cal.getTime()));
+        }
+    }
+
 
     public void onCardClickOpenPopup(View anchorView, final int adapterPosition) {
         if(filteredLinkList.size() <= adapterPosition) return;
