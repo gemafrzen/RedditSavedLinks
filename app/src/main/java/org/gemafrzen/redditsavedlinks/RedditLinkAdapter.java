@@ -188,6 +188,14 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.Ca
 
         public CardViewHolder(View view){
             super(view);
+
+            View cardView = itemView.findViewById(R.id.card_view);
+
+            if(cardView != null){
+                cardView.setOnClickListener(this);
+
+                cardView.setOnLongClickListener(this);
+            }
         }
 
         @Override
@@ -217,26 +225,6 @@ public class RedditLinkAdapter extends RecyclerView.Adapter<RedditLinkAdapter.Ca
             comments = (TextView) itemView.findViewById(R.id.comments);
             createdUtc = (TextView) itemView.findViewById(R.id.utc);
             selftext = (TextView) itemView.findViewById(R.id.selftext);
-
-            /*View cardView = view.findViewById(R.id.card_view);
-
-            if(cardView != null){
-                cardView.setOnClickListener(new View.OnClickListener(){
-                    @Override
-                    public void onClick(View view) {
-                        int position =  getAdapterPosition();
-                        openInBrowser(position);
-                    }
-                });
-
-                cardView.setOnLongClickListener(new View.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View v) {
-                            onCardClickOpenPopup(v, getAdapterPosition());
-                           return true;
-                        }
-                });
-            }*/
         }
 
         public void bind(RedditLink redditLink){
